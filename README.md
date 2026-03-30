@@ -14,7 +14,7 @@
 
 ---
 
-## 🚀 Quick Start (30 seconds)
+## Quick Start (30 seconds)
 
 ```bash
 # 1. Install Termux from F-Droid (NOT Play Store)
@@ -33,67 +33,66 @@ tsx-web
 
 ---
 
-## ✨ Features
+## Game Servers - Ready to Play!
+
+**Users just join like ANY normal server:**
+1. Open game → Multiplayer → Enter IP:Port → Connect!
+
+| Game | Port | Join Command |
+|------|------|--------------|
+| **Minecraft Java** | 25565 | Multiplayer → Direct → `your-ip:25565` |
+| **Minecraft Bedrock** | 19132 | Play → Servers → `your-ip:19132` |
+| **Valheim** | 2456 | Steam → Join → `your-ip:2456` |
+| **Terraria** | 7777 | Multiplayer → Join IP → `your-ip:7777` |
+| **Palworld** | 8211 | Steam → Join → `your-ip:8211` |
+| **Rust** | 28015 | Connect → `your-ip:28015` |
+| **CS:GO / CS2** | 27015 | Console → `connect your-ip` |
+| **7 Days to Die** | 26900 | F1 → `connect your-ip:26900` |
+| **DayZ** | 2302 | Community → Favorites → `your-ip:2302` |
+| **ARK** | 7778 | Steam → Join → `your-ip:7778` |
+| **Garry's Mod** | 27015 | Multiplayer → `your-ip:27015` |
+| **TF2 / L4D2** | 27015 | Console → `connect your-ip` |
+| **Conan Exiles** | 7777 | Join → `your-ip:7777` |
+| **Satisfactory** | 7777 | Host → `your-ip:7777` |
+| **StarMade** | 4242 | Connect → `your-ip:4242` |
+| **Eco** | 3000 | Join → `your-ip:3000` |
+
+---
+
+## All Services (40+)
 
 | Category | Services |
 |----------|----------|
+| **Game Servers** | Minecraft, Valheim, Terraria, Palworld, Rust, CS:GO/CS2, 7DTD, DayZ, ARK, GMod, TF2, L4D2, Conan, Satisfactory, StarMade, Eco |
 | 🌐 **Web Server** | Nginx, PHP, Node.js, Python, Caddy |
-| 🗄️ **Databases** | MariaDB, PostgreSQL, Redis, SQLite |
-| 🎮 **Game Servers** | Minecraft, PocketMine, Terraria |
-| 📁 **File Storage** | FileBrowser, Nextcloud, Syncthing, Rclone |
+| 🗄️ **Databases** | MariaDB, PostgreSQL, Redis, SQLite, MongoDB |
+| 🎬 **Media** | Jellyfin, Navidrome, Emby, Immich |
+| 📁 **Storage** | Nextcloud, FileBrowser, Syncthing |
 | 💻 **Dev Tools** | code-server (VS Code), Git, Gitea |
-| 🎬 **Media** | Jellyfin, Navidrome, Emby |
-| 🔐 **Security** | SSH, Cloudflare Tunnel, WireGuard, Tailscale |
-| 🤖 **AI (NEW!)** | Ollama (Self-hosted LLMs) |
-| 📊 **Analytics** | Umami (Google Analytics alternative) |
-| 🔔 **Automation** | n8n, Home Assistant, AdGuard, ntfy |
-| 📝 **Productivity** | Ghost Blog, BookStack, Vaultwarden |
-
-**40+ services available** - all optimized for Android/Termux
+| 🔐 **Security** | Vaultwarden, AdGuard, SSH, Cloudflare Tunnel, WireGuard |
+| 🤖 **AI** | Ollama (Local LLMs) |
+| 🔔 **Automation** | n8n, Home Assistant, AdGuard |
+| 📊 **Monitoring** | Netdata, Grafana, Uptime Kuma, Umami |
+| 📝 **Productivity** | Ghost Blog, BookStack, Outline |
 
 ---
 
-## 📋 Services List
+## Quick Install Game Servers
 
-### Web Hosting
-| Service | Port | RAM | Description |
-|---------|------|-----|-------------|
-| Nginx | 8080 | 64MB | Web server |
-| PHP-FPM | 9000 | 128MB | PHP interpreter |
-| Caddy | 8080 | 32MB | Auto-HTTPS server |
-| Node.js | 3000+ | 128MB | JavaScript runtime |
-| Python | 5000+ | 128MB | Flask/Django |
+```bash
+# Install all game servers
+~/TermuxServerX/scripts/stacks/install-stack.sh games
 
-### Databases
-| Service | Port | RAM | Description |
-|---------|------|-----|-------------|
-| MariaDB | 3306 | 256MB | MySQL alternative |
-| PostgreSQL | 5432 | 256MB | Advanced SQL |
-| Redis | 6379 | 64MB | Cache database |
-| SQLite | - | 10MB | Lightweight DB |
+# Install specific game server
+~/TermuxServerX/install.sh --service minecraft
 
-### Game Servers
-| Service | Port | RAM | Players |
-|---------|------|-----|---------|
-| Minecraft Java | 25565 | 1-4GB | 10-50 |
-| PocketMine | 19135 | 1GB | 20 |
-| Terraria | 7777 | 1GB | 15 |
-
-### Media
-| Service | Port | RAM | Description |
-|---------|------|-----|-------------|
-| Jellyfin | 8096 | 2GB | Media streaming |
-| Navidrome | 4533 | 256MB | Music server |
-| Emby | 8096 | 2GB | Media platform |
-
-### AI (NEW!)
-| Service | Port | RAM | Description |
-|---------|------|-----|-------------|
-| Ollama | 11434 | 4GB+ | Local LLMs (Llama, Mistral) |
+# View all games with connection info
+~/TermuxServerX/scripts/game-servers.sh
+```
 
 ---
 
-## 🖥️ Commands
+## Commands
 
 ```bash
 # Main Management
@@ -101,22 +100,49 @@ tsx              # Interactive menu
 tsx status       # Check all services
 tsx start nginx  # Start a service
 tsx stop nginx   # Stop a service
-tsx logs nginx   # View logs
+
+# Game Servers
+~/TermuxServerX/scripts/game-servers.sh   # All games menu
+~/TermuxServerX/templates/minecraft/minecraft-manager.sh info   # Show connection info
 
 # Quick Actions
-tsx quick-start    # Start essential services
-tsx quick-stop      # Stop all services
 tsx backup         # Create backup
 tsx optimize       # Optimize system
 tsx health         # Run health check
 
 # Web Dashboard
-tsx-web           # Start web UI (http://localhost:8080)
+tsx-web           # Start web UI
 ```
 
 ---
 
-## 🔧 Installation Options
+## How to Share Your Server
+
+**For Friends to Join:**
+
+```
+1. Give them your public IP:Port
+2. Give them the server password (if set)
+3. They connect like any normal server!
+
+Example: 123.45.67.89:25565
+         password: mysecretpw
+```
+
+**Finding Your Public IP:**
+```bash
+curl ifconfig.me
+```
+
+**Private/Friends-Only Server:**
+```bash
+~/TermuxServerX/scripts/access-control.sh
+# Set to "Friends" mode and add their IPs
+```
+
+---
+
+## Installation Options
 
 ### 1. Full Stack (Everything)
 ```bash
@@ -124,51 +150,95 @@ bash install.sh
 # Choose option 1
 ```
 
-### 2. Web Server Only
-```bash
-bash install.sh
-# Choose option 2
-```
-
-### 3. Game Servers Only
+### 2. Game Servers Only
 ```bash
 bash install.sh
 # Choose option 3
 ```
 
-### 4. Custom Selection
+### 3. Custom Selection
 ```bash
 bash install.sh
 # Choose option 6
-# Select what you want (e.g., w,d,g,v)
+# Select what you want (e.g., games, web, media)
+```
+
+### 4. Quick Stacks
+```bash
+# Web stack
+~/TermuxServerX/scripts/stacks/install-stack.sh lemp
+
+# Media stack  
+~/TermuxServerX/scripts/stacks/install-stack.sh media
+
+# Dev stack
+~/TermuxServerX/scripts/stacks/install-stack.sh dev
+
+# Game servers
+~/TermuxServerX/scripts/stacks/install-stack.sh games
 ```
 
 ---
 
-## 📁 File Locations
+## Game Server Management
+
+```bash
+# Start a game server
+~/TermuxServerX/manage start minecraft
+~/TermuxServerX/manage start valheim
+~/TermuxServerX/manage start terraria
+
+# View connection info (IP, Port, Password)
+~/TermuxServerX/templates/minecraft/minecraft-manager.sh info
+~/TermuxServerX/templates/valheim/valheim-manager.sh info
+
+# Backup game saves
+~/TermuxServerX/templates/minecraft/minecraft-manager.sh backup
+
+# Manage mods
+~/TermuxServerX/templates/game/mod-manager.sh
+```
+
+---
+
+## File Locations
 
 ```
 ~/TermuxServerX/     # Main installation
 ├── config/          # Configuration files
-├── core/            # Core engine
+├── core/            # Core engine (auto-start, watchdog, etc.)
 ├── services/       # Service installers
+├── templates/      # Game server configs & managers
 ├── webui/          # Web dashboard
-├── data/           # Service data
+├── scripts/        # Backup, stacks, access control
+├── data/           # Service data (games, databases, etc.)
 ├── logs/           # Log files
-└── backups/         # Backups
+└── backups/        # Backups
 
-~/storage/shared/    # Shared storage
-├── www/            # Web files
-├── music/          # Music files
-├── photos/         # Photo files
-└── backups/        # Backup storage
+# Game saves locations:
+~/TermuxServerX/data/minecraft/     # Minecraft worlds
+~/TermuxServerX/data/valheim/        # Valheim worlds
+~/TermuxServerX/data/terraria/       # Terraria worlds
+~/TermuxServerX/backups/games/       # Game backups
 ```
 
 ---
 
-## 🌐 Public Access
+## Game Server Mods Support
 
-### Cloudflare Tunnel (Free - Recommended)
+```bash
+# Install mods for any game
+~/TermuxServerX/templates/game/mod-manager.sh
+
+# Minecraft modpack manager
+~/TermuxServerX/templates/minecraft/modpack-manager.sh create
+```
+
+---
+
+## Public Access (No Port Forwarding)
+
+### Cloudflare Tunnel (Recommended)
 ```bash
 bash ~/TermuxServerX/services/network/cloudflared.sh install
 bash ~/TermuxServerX/services/network/cloudflared.sh setup
@@ -179,50 +249,66 @@ bash ~/TermuxServerX/services/network/cloudflared.sh setup
 bash ~/TermuxServerX/services/network/cloudflared.sh quick
 ```
 
-### ngrok
+### Tailscale (VPN)
 ```bash
-bash ~/TermuxServerX/services/network/ngrok.sh install
-ngrok http 8080
+bash ~/TermuxServerX/services/network/tailscale.sh install
 ```
 
 ---
 
-## 🔒 Security
+## Security
 
-- **SSH Server**: Pre-configured on port 8022
+- **Server Passwords**: Set strong passwords for each game
+- **Private Servers**: Use access-control.sh for IP whitelisting
+- **SSH**: Pre-configured on port 8022
 - **Web UI**: Password-protected dashboard
 - **Cloudflare Tunnel**: Zero-trust security (no open ports)
-- **Auto-updates**: Security patches
 
 ---
 
-## 📊 Monitoring
+## Auto Features
+
+```bash
+# Enable auto-start on boot
+~/TermuxServerX/core/auto-start.sh enable
+
+# Enable watchdog (auto-restart crashed services)
+bash ~/TermuxServerX/core/watchdog/watchdog-daemon.sh daemon
+
+# Run auto maintenance
+~/TermuxServerX/core/maintenance.sh
+```
+
+---
+
+## Monitoring
 
 Built-in monitoring includes:
 - Real-time CPU/RAM/Disk usage
 - Service status dashboard
+- Game server online/offline status
 - Log viewer
 - Process manager
-- Resource graphs
 
 ---
 
-## 💾 Backup
+## Backup
 
 ```bash
 # Create backup
 tsx backup
 
-# View backups
-ls ~/TermuxServerX/backups/full/
+# Elite backup with compression
+~/TermuxServerX/scripts/backup-elite.sh
 
-# Restore
-bash ~/TermuxServerX/scripts/backup.sh restore <backup-file>
+# Backup specific game
+~/TermuxServerX/templates/minecraft/minecraft-manager.sh backup
+~/TermuxServerX/templates/valheim/valheim-manager.sh backup
 ```
 
 ---
 
-## 🛠️ Hardware Requirements
+## Hardware Requirements
 
 | Spec | Minimum | Recommended |
 |------|---------|-------------|
@@ -233,21 +319,24 @@ bash ~/TermuxServerX/scripts/backup.sh restore <backup-file>
 
 ---
 
-## 📱 24/7 Server Tips
+## Troubleshooting
 
-1. **Disable battery optimization** for Termux
-2. **Keep plugged in** (disable charging limits)
-3. **Use a cooling fan** (for game servers)
-4. **Setup auto-start** (installer does this automatically)
-
----
-
-## 🆘 Troubleshooting
-
-### Services won't start?
+### Can't connect to game server?
 ```bash
-tsx logs <service-name>
-tsx status
+# 1. Check if server is running
+screen -list
+
+# 2. Get your public IP
+curl ifconfig.me
+
+# 3. Check logs
+tail ~/TermuxServerX/logs/minecraft.log
+```
+
+### Server keeps crashing?
+```bash
+# Enable watchdog
+bash ~/TermuxServerX/core/watchdog/watchdog-daemon.sh daemon
 ```
 
 ### Out of memory?
@@ -256,33 +345,27 @@ tsx stop minecraft  # Stop heavy services
 tsx optimize        # Optimize memory
 ```
 
-### Web UI not loading?
-```bash
-pkill -f server.py
-tsx-web
-```
-
-### Need help?
-- [GitHub Issues](https://github.com/MrNova420/TermuxServerX/issues)
-- [GitHub Discussions](https://github.com/MrNova420/TermuxServerX/discussions)
-
 ---
 
-## 📈 Top Self-Hosted Alternatives (2026)
-
-Replace expensive cloud services with free self-hosted alternatives:
+## Top Self-Hosted Alternatives (2026)
 
 | Cloud Service | TermuxServerX Alternative | Savings |
 |--------------|---------------------------|---------|
+| Minecraft Realms ($7/mo) | Self-hosted | $84/year |
+| Nitrado | Self-hosted | $120/year |
 | Netflix | Jellyfin | $180/year |
 | Spotify | Navidrome | $120/year |
 | Google Drive | Nextcloud | $100/year |
 | 1Password | Vaultwarden | $48/year |
-| Discord | Matrix/Gitea | FREE |
-| Slack | Rocket.Chat | $2,500/year |
-| GitHub | Gitea | FREE |
 
-**Potential yearly savings: $7,700-$9,200**
+---
+
+## Documentation
+
+- [Quick Start](docs/QUICK_START.md)
+- [Game Servers Guide](docs/GAME_SERVERS.md)
+- [All Services List](docs/SERVICES.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
 
 ---
 
@@ -304,6 +387,5 @@ MIT License - Free for personal and commercial use.
 <p align="center">
   Made with ❤️ for the Termux community<br>
   <a href="https://github.com/MrNova420/TermuxServerX">GitHub</a> • 
-  <a href="https://github.com/MrNova420/TermuxServerX/issues">Issues</a> • 
-  <a href="https://github.com/MrNova420/TermuxServerX/discussions">Discussions</a>
+  <a href="https://github.com/MrNova420/TermuxServerX/issues">Issues</a>
 </p>

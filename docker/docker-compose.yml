@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: tsx-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../data/nginx/html:/usr/share/nginx/html
+      - ../data/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - tsx-network
+
+  mariadb:
+    image: mariadb:latest
+    container_name: tsx-mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme}
+    volumes:
+      - ../data/mariadb:/var/lib/mysql
+    networks:
+      - tsx-network
+
+  postgresql:
+    image: postgres:alpine
+    container_name: tsx-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - ../data/postgres:/var/lib/postgresql/data
+    networks:
+      - tsx-network
+
+  redis:
+    image: redis:alpine
+    container_name: tsx-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../data/redis:/data
+    command: redis-server --appendonly yes
+    networks:
+      - tsx-network
+
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: tsx-jellyfin
+    restart: unless-stopped
+    ports:
+      - "8096:8096"
+      - "8920:8920"
+    volumes:
+      - ../data/jellyfin/config:/config
+      - ../data/jellyfin/cache:/cache
+      - ../data/jellyfin/media:/media
+    networks:
+      - tsx-network
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: tsx-gitea
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    volumes:
+      - ../data/gitea:/data
+    networks:
+      - tsx-network
+
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: tsx-vaultwarden
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      WEBSOCKET_ENABLED: "true"
+    volumes:
+      - ../data/vaultwarden:/data
+    networks:
+      - tsx-network
+
+  navidrome:
+    image: navidrome/navidrome:latest
+    container_name: tsx-navidrome
+    restart: unless-stopped
+    ports:
+      - "4533:4533"
+    volumes:
+      - ../data/navidrome/config:/config
+      - ../data/navidrome/music:/music
+      - ../data/navidrome/cache:/cache
+    networks:
+      - tsx-network
+
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: tsx-adguard
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "3000:3000/tcp"
+      - "853:853/tcp"
+    volumes:
+      - ../data/adguard/work:/opt/adguardhome/work
+      - ../data/adguard/conf:/opt/adguardhome/conf
+    networks:
+      - tsx-network
+
+networks:
+  tsx-network:
+    driver: bridge
