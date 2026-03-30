@@ -1,0 +1,288 @@
+#!/bin/bash
+# TermuxServerX - Complete Service Manager
+# Handles all services with easy commands
+
+TSX_DIR="$HOME/TermuxServerX"
+source "$TSX_DIR/config.env" 2>/dev/null || true
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+is_running() { pgrep -f "$1" > /dev/null 2>&1; }
+log() { echo -e "${GREEN}[✓]${NC} $1"; }
+warn() { echo -e "${YELLOW}[!]${NC} $1"; }
+err() { echo -e "${RED}[✗]${NC} $1"; }
+
+show_all_services() {
+    echo -e "\n${CYAN}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${CYAN}          TermuxServerX - All Available Services${NC}"
+    echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}\n"
+    
+    echo -e "${BLUE}[ WEB SERVER STACK ]${NC}"
+    echo "  nginx        - Nginx web server (port 8080)"
+    echo "  php          - PHP-FPM (port 9000)"
+    echo "  caddy        - Caddy web server with auto-HTTPS"
+    echo "  node         - Node.js runtime"
+    echo "  python       - Python with Flask"
+    
+    echo -e "\n${BLUE}[ DATABASE STACK ]${NC}"
+    echo "  mariadb      - MariaDB/MySQL (port 3306)"
+    echo "  postgresql   - PostgreSQL (port 5432)"
+    echo "  redis        - Redis cache (port 6379)"
+    echo "  sqlite       - SQLite (embedded)"
+    echo "  mongodb      - MongoDB (port 27017)"
+    
+    echo -e "\n${BLUE}[ GAME SERVERS ]${NC}"
+    echo "  minecraft    - Minecraft Java (port 25565)"
+    echo "  pocketmine   - Minecraft Bedrock/PE (port 19135)"
+    echo "  terraria     - Terraria server (port 7777)"
+    echo "  valheim      - Valheim server (ports 2456-2458)"
+    echo "  csgo         - CS:GO server (port 27015)"
+    echo "  rust         - Rust server (port 28015)"
+    echo "  starmade    - StarMade server"
+    echo "  minestom    - Minestom Java server"
+    
+    echo -e "\n${BLUE}[ FILE STORAGE & SYNC ]${NC}"
+    echo "  filebrowser  - Web file manager (port 8081)"
+    echo "  nextcloud    - Full cloud suite (ownCloud alternative)"
+    echo "  syncthing    - P2P file sync (port 8384)"
+    echo "  rclone       - Cloud sync (30+ providers)"
+    echo "  seafile      - Dropbox alternative"
+    
+    echo -e "\n${BLUE}[ DEVELOPER TOOLS ]${NC}"
+    echo "  code-server  - VS Code in browser (port 8443)"
+    echo "  git          - Git version control"
+    echo "  gitea        - Self-hosted GitHub (port 3000)"
+    echo "  docker       - Docker containers"
+    
+    echo -e "\n${BLUE}[ MEDIA SERVERS ]${NC}"
+    echo "  jellyfin      - Media streaming (port 8096)"
+    echo "  plex         - Plex Media Server"
+    echo "  emby         - Emby Server"
+    echo "  owncast      - Live streaming"
+    
+    echo -e "\n${BLUE}[ PRODUCTIVITY ]${NC}"
+    echo "  vaultwarden  - Password manager (Bitwarden)"
+    echo "  bookstack    - Documentation wiki"
+    echo "  outline      - Team wiki"
+    echo "  ghost        - Blog/CMS platform"
+    echo "  wordpress    - WordPress CMS"
+    
+    echo -e "\n${BLUE}[ NETWORK & VPN ]${NC}"
+    echo "  cloudflared  - Cloudflare Tunnel (public URL)"
+    echo "  ngrok        - ngrok tunnel"
+    echo "  tailscale    - Mesh VPN"
+    echo "  wireguard    - WireGuard VPN"
+    echo "  ssh          - SSH server (port 8022)"
+    
+    echo -e "\n${BLUE}[ MONITORING ]${NC}"
+    echo "  netdata      - Real-time monitoring (port 19999)"
+    echo "  grafana      - Metrics dashboard (port 3030)"
+    echo "  prometheus   - Metrics collection"
+    echo "  uptimekuma  - Uptime monitoring (port 3001)"
+    
+    echo -e "\n${CYAN}═══════════════════════════════════════════════════════════════${NC}\n"
+}
+
+quick_start() {
+    echo -e "\n${CYAN}[ Quick Start ]${NC}\n"
+    echo "Starting essential services..."
+    
+    bash "$TSX_DIR/services/web/nginx.sh" start 2>/dev/null && log "Nginx" || true
+    bash "$TSX_DIR/services/web/php.sh" start 2>/dev/null && log "PHP-FPM" || true
+    bash "$TSX_DIR/services/database/redis.sh" start 2>/dev/null && log "Redis" || true
+    bash "$TSX_DIR/services/storage/filebrowser.sh" start 2>/dev/null && log "FileBrowser" || true
+    
+    echo ""
+    log "Essential services started!"
+    echo "Access:"
+    echo "  Web:  http://localhost:8080"
+    echo "  Files: http://localhost:8081"
+}
+
+quick_stop() {
+    echo -e "\n${YELLOW}[ Quick Stop ]${NC}\n"
+    echo "Stopping all services..."
+    
+    pkill -f nginx 2>/dev/null && log "Nginx stopped" || true
+    pkill -f php-fpm 2>/dev/null && log "PHP-FPM stopped" || true
+    pkill -f redis 2>/dev/null && log "Redis stopped" || true
+    pkill -f filebrowser 2>/dev/null && log "FileBrowser stopped" || true
+    pkill -f minecraft 2>/dev/null && log "Minecraft stopped" || true
+    
+    echo ""
+    warn "All services stopped"
+}
+
+install_category() {
+    local cat=$1
+    echo -e "\n${CYAN}[ Installing $cat ]${NC}\n"
+    
+    case $cat in
+        web)
+            bash "$TSX_DIR/services/web/nginx.sh" install
+            bash "$TSX_DIR/services/web/php.sh" install
+            bash "$TSX_DIR/services/web/caddy.sh" install
+            ;;
+        database)
+            bash "$TSX_DIR/services/database/mariadb.sh" install
+            bash "$TSX_DIR/services/database/postgresql.sh" install
+            bash "$TSX_DIR/services/database/redis.sh" install
+            ;;
+        games)
+            bash "$TSX_DIR/services/games/minecraft.sh" install
+            bash "$TSX_DIR/services/games/pocketmine.sh" install
+            ;;
+        storage)
+            bash "$TSX_DIR/services/storage/filebrowser.sh" install
+            bash "$TSX_DIR/services/storage/syncthing.sh" install
+            ;;
+        dev)
+            bash "$TSX_DIR/services/dev/code-server.sh" install
+            bash "$TSX_DIR/services/dev/git.sh" install
+            ;;
+        media)
+            bash "$TSX_DIR/services/media/jellyfin.sh" install
+            ;;
+        productivity)
+            bash "$TSX_DIR/services/productivity/gitea.sh" install
+            bash "$TSX_DIR/services/productivity/vaultwarden.sh" install
+            bash "$TSX_DIR/services/productivity/bookstack.sh" install
+            ;;
+        network)
+            bash "$TSX_DIR/services/network/cloudflared.sh" install
+            bash "$TSX_DIR/services/network/ssh.sh" install
+            ;;
+        monitoring)
+            bash "$TSX_DIR/services/monitoring/netdata.sh" install
+            ;;
+        all)
+            bash "$TSX_DIR/install.sh"
+            ;;
+    esac
+}
+
+service_status_all() {
+    echo -e "\n${CYAN}[ Service Status ]${NC}\n"
+    printf "%-20s %-15s %s\n" "Service" "Status" "Port"
+    echo "────────────────────────────────────────────"
+    
+    local services=(
+        "nginx:8080"
+        "php-fpm:9000"
+        "mariadb:3306"
+        "redis:6379"
+        "minecraft:25565"
+        "pocketmine:19135"
+        "filebrowser:8081"
+        "code-server:8443"
+        "sshd:8022"
+        "jellyfin:8096"
+        "gitea:3000"
+        "vaultwarden:8080"
+        "netdata:19999"
+    )
+    
+    for entry in "${services[@]}"; do
+        IFS=':' read -r svc port <<< "$entry"
+        if is_running "$svc"; then
+            printf "%-20s ${GREEN}%-15s${NC} :%s\n" "$svc" "running" "$port"
+        else
+            printf "%-20s ${RED}%-15s${NC} :%s\n" "$svc" "stopped" "$port"
+        fi
+    done
+}
+
+show_guides() {
+    echo -e "\n${CYAN}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${CYAN}                    User Guides & Documentation${NC}"
+    echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}\n"
+    
+    echo -e "${BLUE}[ SETUP GUIDES ]${NC}"
+    echo "  1. First Time Setup"
+    echo "  2. Web Server Setup"
+    echo "  3. Game Server Setup"
+    echo "  4. Public Access (Tunnel)"
+    echo "  5. 24/7 Always-On Server"
+    echo "  6. Backup & Restore"
+    
+    echo -e "\n${BLUE}[ GAME SERVER GUIDES ]${NC}"
+    echo "  minecraft-guide   - Minecraft setup"
+    echo "  pocketmine-guide  - Bedrock server"
+    echo "  terraria-guide    - Terraria server"
+    
+    echo -e "\n${BLUE}[ WEB HOSTING GUIDES ]${NC}"
+    echo "  wordpress-guide    - Install WordPress"
+    echo "  nextcloud-guide   - Install Nextcloud"
+    echo "  php-guide         - PHP configuration"
+    
+    echo -e "\n${BLUE}[ SECURITY GUIDES ]${NC}"
+    echo "  ssl-guide          - SSL certificates"
+    echo "  firewall-guide     - Security setup"
+    echo "  backup-guide       - Backup strategies"
+    
+    echo -e "\n${CYAN}═══════════════════════════════════════════════════════════════${NC}\n"
+}
+
+show_help() {
+    echo -e "\n${CYAN}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${CYAN}              TermuxServerX Manager Help${NC}"
+    echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}\n"
+    
+    echo -e "${BLUE}SERVICE COMMANDS:${NC}"
+    echo "  tsx start <service>     Start a service"
+    echo "  tsx stop <service>      Stop a service"
+    echo "  tsx restart <service>    Restart a service"
+    echo "  tsx status              Show all services"
+    echo "  tsx logs <service>      View service logs"
+    
+    echo -e "\n${BLUE}QUICK ACTIONS:${NC}"
+    echo "  tsx start-all          Start all installed services"
+    echo "  tsx stop-all           Stop all services"
+    echo "  tsx quick-start        Start essential services"
+    echo "  tsx quick-stop         Stop all services"
+    
+    echo -e "\n${BLUE}INSTALLATION:${NC}"
+    echo "  tsx install <category>  Install category"
+    echo "  tsx install all         Install everything"
+    echo "  tsx services           List all available services"
+    
+    echo -e "\n${BLUE}MANAGEMENT:${NC}"
+    echo "  tsx backup             Create backup"
+    echo "  tsx optimize           Optimize system"
+    echo "  tsx health             Run health check"
+    echo "  tsx maintenance        Run maintenance"
+    echo "  tsx update             Update system"
+    
+    echo -e "\n${BLUE}INFORMATION:${NC}"
+    echo "  tsx guides             Show user guides"
+    echo "  tsx info               System information"
+    echo "  tsx resources          Resource usage"
+    echo "  tsx ports              Show port usage"
+    echo "  tsx help               Show this help"
+    
+    echo -e "\n${CYAN}═══════════════════════════════════════════════════════════════${NC}\n"
+}
+
+case "${1:-help}" in
+    services|list) show_all_services ;;
+    start-all)
+        for svc in nginx php-fpm mariadb redis; do
+            bash "$TSX_DIR/manage" start "$svc" 2>/dev/null
+        done
+        log "All services started"
+        ;;
+    stop-all) quick_stop ;;
+    quick-start) quick_start ;;
+    quick-stop) quick_stop ;;
+    install)
+        install_category "${2:-all}"
+        ;;
+    status-all|status) service_status_all ;;
+    guides|help|--help|-h) show_help ;;
+    *) show_help ;;
+esac
