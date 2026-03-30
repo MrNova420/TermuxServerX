@@ -1,0 +1,353 @@
+#!/bin/bash
+
+TSX_DIR="$HOME/TermuxServerX"
+source "$TSX_DIR/config.env" 2>/dev/null || true
+source "$TSX_DIR/core/utils.sh" 2>/dev/null || true
+source "$TSX_DIR/core/detect.sh" 2>/dev/null || true
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+show_banner() {
+    echo -e "${CYAN}"
+    echo "  ╔═══════════════════════════════════════════════════════╗"
+    echo "  ║              TermuxServerX Manager v1.0                 ║"
+    echo "  ╚═══════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+show_help() {
+    echo -e "${BOLD}Usage:${NC} tsx [command] [service]"
+    echo ""
+    echo -e "${BOLD}Commands:${NC}"
+    echo "  start <service>    Start a service"
+    echo "  stop <service>     Stop a service"
+    echo "  restart <service>  Restart a service"
+    echo "  status             Show all services status"
+    echo "  logs <service>     Show service logs"
+    echo "  install <service>  Install a service"
+    echo "  remove <service>   Remove a service"
+    echo "  update             Update TermuxServerX"
+    echo "  backup             Create backup"
+    echo "  restore <file>     Restore from backup"
+    echo "  resources          Show system resources"
+    echo "  optimize           Optimize system"
+    echo "  settings           Open settings"
+    echo "  help               Show this help"
+    echo ""
+    echo -e "${BOLD}Services:${NC}"
+    list_services
+}
+
+list_services() {
+    local services=(
+        "nginx" "php" "mariadb" "postgresql" "redis" "sqlite"
+        "minecraft" "bedrock" "pocketmine" "valheim" "csgo" "terraria"
+        "nextcloud" "syncthing" "filebrowser" "rclone"
+        "code-server" "git"
+        "jellyfin" "plex" "emby"
+        "gitea" "vaultwarden" "bookstack"
+        "cloudflared" "ngrok" "wireguard"
+        "netdata" "grafana"
+    )
+    
+    for service in "${services[@]}"; do
+        echo "  - $service"
+    done
+}
+
+show_status() {
+    echo -e "${BOLD}System Status:${NC}"
+    detect_all 2>/dev/null
+    echo ""
+    
+    echo -e "${BOLD}Services:${NC}"
+    printf "${CYAN}%-20s ${NC}%s\n" "Service" "Status"
+    echo "----------------------------------------"
+    
+    local services=(
+        "nginx:80"
+        "php-fpm:9000"
+        "mariadb:3306"
+        "redis:6379"
+        "minecraft:25565"
+        "jellyfin:8096"
+        "filebrowser:8081"
+        "code-server:8443"
+        "netdata:19999"
+    )
+    
+    for entry in "${services[@]}"; do
+        IFS=':' read -r service port <<< "$entry"
+        
+        if is_service_running "$service"; then
+            status="${GREEN}running${NC}"
+        else
+            status="${RED}stopped${NC}"
+        fi
+        
+        printf "%-20s %s\n" "$service" "$status"
+    done
+    
+    echo ""
+    echo -e "${BOLD}Resources:${NC}"
+    echo "  CPU: $(get_cpu_usage)%"
+    echo "  RAM: $(get_memory_usage)% used"
+    echo "  Disk: $(get_disk_usage)% used"
+    echo "  Uptime: $(get_uptime_formatted)"
+}
+
+start_service() {
+    local service=$1
+    
+    if [ -z "$service" ]; then
+        log_error "Usage: tsx start <service>"
+        return 1
+    fi
+    
+    if is_service_running "$service"; then
+        log_warn "$service is already running"
+        return 0
+    fi
+    
+    log_info "Starting $service..."
+    
+    case $service in
+        nginx)
+            nginx -t && nginx
+            ;;
+        php|php-fpm)
+            pkill -f php-fpm 2>/dev/null
+            sleep 1
+            php-fpm
+            ;;
+        mariadb)
+            pg_ctlcluster 10 mysql start 2>/dev/null || mysqld_safe &
+            ;;
+        redis)
+            redis-server --daemonize yes
+            ;;
+        minecraft)
+            [ -d "$TSX_DIR/data/minecraft" ] && cd "$TSX_DIR/data/minecraft" && bash start.sh &
+            ;;
+        jellyfin)
+            cd "$TSX_DIR/data/jellyfin" && dotnet JELLYFIN.dll &
+            ;;
+        *)
+            if [ -f "$TSX_DIR/services/$service/start.sh" ]; then
+                bash "$TSX_DIR/services/$service/start.sh"
+            else
+                log_error "Service not found: $service"
+                return 1
+            fi
+            ;;
+    esac
+    
+    sleep 2
+    
+    if is_service_running "$service"; then
+        log_success "$service started"
+    else
+        log_error "Failed to start $service"
+        return 1
+    fi
+}
+
+stop_service() {
+    local service=$1
+    
+    if [ -z "$service" ]; then
+        log_error "Usage: tsx stop <service>"
+        return 1
+    fi
+    
+    if ! is_service_running "$service"; then
+        log_warn "$service is not running"
+        return 0
+    fi
+    
+    log_info "Stopping $service..."
+    
+    case $service in
+        nginx)
+            nginx -s stop 2>/dev/null || pkill -f nginx
+            ;;
+        php|php-fpm)
+            pkill -f php-fpm
+            ;;
+        mariadb)
+            mysqladmin shutdown 2>/dev/null || pkill -f mysqld
+            ;;
+        redis)
+            redis-cli shutdown 2>/dev/null || pkill -f redis
+            ;;
+        minecraft)
+            screen -S minecraft -X stuff 'stop\n' 2>/dev/null
+            ;;
+        *)
+            pkill -f "$service"
+            ;;
+    esac
+    
+    sleep 2
+    
+    if ! is_service_running "$service"; then
+        log_success "$service stopped"
+    else
+        log_error "Failed to stop $service"
+        return 1
+    fi
+}
+
+restart_service() {
+    local service=$1
+    
+    stop_service "$service"
+    sleep 1
+    start_service "$service"
+}
+
+show_logs() {
+    local service=$1
+    
+    if [ -z "$service" ]; then
+        service="webui"
+    fi
+    
+    local log_file="$TSX_DIR/logs/${service}.log"
+    
+    if [ ! -f "$log_file" ]; then
+        log_warn "No log file for $service"
+        return 1
+    fi
+    
+    tail -50 "$log_file"
+}
+
+show_resources() {
+    echo -e "${BOLD}System Resources:${NC}"
+    detect_all
+}
+
+run_interactive() {
+    while true; do
+        clear
+        show_banner
+        show_status
+        
+        echo ""
+        echo -e "${BOLD}Menu:${NC}"
+        echo "  [1] Start a service"
+        echo "  [2] Stop a service"
+        echo "  [3] Restart a service"
+        echo "  [4] View logs"
+        echo "  [5] System resources"
+        echo "  [6] Create backup"
+        echo "  [7] Update system"
+        echo "  [8] Settings"
+        echo "  [0] Exit"
+        echo ""
+        echo -n "Select option: "
+        read choice
+        
+        case $choice in
+            1)
+                echo -n "Enter service name: "
+                read service
+                start_service "$service"
+                read -p "Press Enter to continue..."
+                ;;
+            2)
+                echo -n "Enter service name: "
+                read service
+                stop_service "$service"
+                read -p "Press Enter to continue..."
+                ;;
+            3)
+                echo -n "Enter service name: "
+                read service
+                restart_service "$service"
+                read -p "Press Enter to continue..."
+                ;;
+            4)
+                echo -n "Enter service name: "
+                read service
+                show_logs "$service"
+                read -p "Press Enter to continue..."
+                ;;
+            5)
+                show_resources
+                read -p "Press Enter to continue..."
+                ;;
+            6)
+                bash "$TSX_DIR/scripts/backup.sh"
+                read -p "Press Enter to continue..."
+                ;;
+            7)
+                bash "$TSX_DIR/scripts/update.sh"
+                read -p "Press Enter to continue..."
+                ;;
+            8)
+                echo "Settings coming soon..."
+                read -p "Press Enter to continue..."
+                ;;
+            0)
+                clear
+                exit 0
+                ;;
+        esac
+    done
+}
+
+case "${1:-interactive}" in
+    start)
+        start_service "$2"
+        ;;
+    stop)
+        stop_service "$2"
+        ;;
+    restart)
+        restart_service "$2"
+        ;;
+    status)
+        show_status
+        ;;
+    logs)
+        show_logs "$2"
+        ;;
+    resources)
+        show_resources
+        ;;
+    optimize)
+        bash "$TSX_DIR/core/optimize.sh"
+        ;;
+    backup)
+        bash "$TSX_DIR/scripts/backup.sh"
+        ;;
+    update)
+        bash "$TSX_DIR/scripts/update.sh"
+        ;;
+    install)
+        echo "Installing $2..."
+        bash "$TSX_DIR/services/$2/install.sh" 2>/dev/null || log_error "Service not found: $2"
+        ;;
+    remove)
+        echo "Removing $2..."
+        bash "$TSX_DIR/services/$2/remove.sh" 2>/dev/null || log_error "Service not found: $2"
+        ;;
+    interactive|-i|i)
+        run_interactive
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $1${NC}"
+        echo "Run 'tsx help' for usage"
+        ;;
+esac
